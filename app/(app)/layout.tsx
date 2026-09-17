@@ -1,11 +1,14 @@
 import Link from "next/link";
 import LogoutButton from "./LogoutButton";
+import { auth } from "@/lib/auth";
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
   return (
     <>
       <nav className="border-b p-4">
@@ -13,7 +16,9 @@ export default function AppLayout({
           <Link href="/posts">Posts</Link>
           <Link href="/create-post">Create Post</Link>
           <Link href="/search/users">Search Users</Link>
-
+          {session?.user?.name && (
+            <Link href={`/profile/${session.user.name}`}>Profile</Link>
+          )}
           <LogoutButton />
         </div>
       </nav>
