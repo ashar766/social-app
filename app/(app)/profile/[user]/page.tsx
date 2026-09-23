@@ -1,7 +1,9 @@
 import prisma from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Image from "next/image";
+import FollowButton from "../../components/FollowButton";
 
 type Props = {
   params: Promise<{ user: string }>;
@@ -10,9 +12,9 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { user } = await params;
 
-  const profile = await prisma.user.findFirst({
+  const profile = await prisma.user.findUnique({
     where: {
-      name: user,
+      username: user,
     },
   });
 
@@ -31,10 +33,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ProfilePage({ params }: Props) {
   const { user } = await params;
 
-  // Get the profile user
-  const profile = await prisma.user.findFirst({
+  const session = await auth();
+
+  const profile = await prisma.user.findUnique({
     where: {
-      name: user,
+      username: user,
+    },
+    include: {
+      _count: {
+        select: {
+          followers: true,
+          following: true,
+        },
+      },
     },
   });
 
@@ -42,7 +53,6 @@ export default async function ProfilePage({ params }: Props) {
     notFound();
   }
 
-  // Get only this user's posts
   const posts = await prisma.post.findMany({
     where: {
       authorId: profile.id,
@@ -52,9 +62,19 @@ export default async function ProfilePage({ params }: Props) {
     },
   });
 
+  const existingFollow = session?.user?.id
+    ? await prisma.follow.findUnique({
+        where: {
+          followerId_followingId: {
+            followerId: session.user.id,
+            followingId: profile.id,
+          },
+        },
+      })
+    : null;
+
   return (
     <main className="mx-auto max-w-3xl p-6">
-      {/* Profile */}
       <div className="flex items-center gap-6 border-b pb-6">
         <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gray-200 text-3xl">
           {profile.name.charAt(0)}
@@ -65,13 +85,19 @@ export default async function ProfilePage({ params }: Props) {
 
           <p className="text-gray-500">@{profile.username}</p>
 
-          {profile.bio && (
-            <p className="mt-2">{profile.bio}</p>
+          {profile.bio && <p className="mt-2">{profile.bio}</p>}
+
+          {session?.user?.id !== profile.id && (
+            <div className="mt-4">
+              <FollowButton
+                userId={profile.id}
+                status={existingFollow?.status ?? null}
+              />
+            </div>
           )}
         </div>
       </div>
 
-      {/* Stats */}
       <div className="flex gap-8 py-6">
         <div>
           <p className="font-bold">{posts.length}</p>
@@ -79,17 +105,16 @@ export default async function ProfilePage({ params }: Props) {
         </div>
 
         <div>
-          <p className="font-bold">0</p>
+          <p className="font-bold">{profile._count.followers}</p>
           <p className="text-gray-500">Followers</p>
         </div>
 
         <div>
-          <p className="font-bold">0</p>
+          <p className="font-bold">{profile._count.following}</p>
           <p className="text-gray-500">Following</p>
         </div>
       </div>
 
-      {/* Posts */}
       <section>
         <h2 className="mb-4 text-xl font-bold">Posts</h2>
 
@@ -98,10 +123,7 @@ export default async function ProfilePage({ params }: Props) {
         ) : (
           <div className="grid grid-cols-2 gap-4">
             {posts.map((post) => (
-              <div
-                key={post.id}
-                className="overflow-hidden rounded-lg border"
-              >
+              <div key={post.id} className="overflow-hidden rounded-lg border">
                 <div className="relative aspect-square">
                   <Image
                     src={post.imageUrl}
@@ -112,9 +134,7 @@ export default async function ProfilePage({ params }: Props) {
                   />
                 </div>
 
-                {post.caption && (
-                  <p className="p-3">{post.caption}</p>
-                )}
+                {post.caption && <p className="p-3">{post.caption}</p>}
               </div>
             ))}
           </div>

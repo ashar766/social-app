@@ -34,6 +34,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!passwordMatches) {
           return null;
         }
+
         return {
           id: user.id,
           name: user.name,
@@ -52,6 +53,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.username = user.username;
       }
 
       return token;
@@ -60,6 +62,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
+        session.user.username = token.username as string;
       }
 
       return session;

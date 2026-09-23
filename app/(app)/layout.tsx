@@ -16,8 +16,8 @@ export default async function AppLayout({
           <Link href="/posts">Posts</Link>
           <Link href="/create-post">Create Post</Link>
           <Link href="/search/users">Search Users</Link>
-          {session?.user?.name && (
-            <Link href={`/profile/${session.user.name}`}>Profile</Link>
+          {session?.user?.username && (
+            <Link href={`/profile/${session.user.username}`}>Profile</Link>
           )}
           <LogoutButton />
         </div>

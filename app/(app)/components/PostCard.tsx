@@ -1,4 +1,6 @@
+import Link from "next/link";
 import Image from "next/image";
+import LikeButton from "./LikeButton";
 
 type PostCardProps = {
   post: {
@@ -6,6 +8,8 @@ type PostCardProps = {
     caption: string | null;
     imageUrl: string;
     category: string | null;
+    likeCount: number;
+    liked: boolean;
     author: {
       username: string;
       name: string;
@@ -15,29 +19,38 @@ type PostCardProps = {
 
 export default function PostCard({ post }: PostCardProps) {
   return (
-    <article className="overflow-hidden rounded-lg border">
-      <div className="p-4">
-        <p className="font-bold">@{post.author.username}</p>
-        <p className="text-sm text-gray-500">{post.author.name}</p>
-      </div>
+    <Link href={`/post/${post.id}`}>
+      <article className="overflow-hidden rounded-lg border">
+        <div className="relative aspect-square">
+          <Image
+            src={post.imageUrl}
+            alt={post.caption || "Post image"}
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          />
+        </div>
 
-      <div className="relative aspect-square">
-        <Image
-          src={post.imageUrl}
-          alt={post.caption || "Post image"}
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 100vw, 768px"
-        />
-      </div>
+        <div className="p-3">
+          <p className="text-sm font-bold">@{post.author.username}</p>
 
-      <div className="p-4">
-        {post.caption && <p>{post.caption}</p>}
+          {post.caption && (
+            <p className="mt-1 line-clamp-2 text-sm">{post.caption}</p>
+          )}
 
-        {post.category && (
-          <p className="mt-2 text-sm text-gray-500">#{post.category}</p>
-        )}
-      </div>
-    </article>
+          {post.category && (
+            <p className="mt-1 text-xs text-gray-500">#{post.category}</p>
+          )}
+
+          <div className="mt-2">
+            <LikeButton
+              postId={post.id}
+              liked={post.liked}
+              likeCount={post.likeCount}
+            />
+          </div>
+        </div>
+      </article>
+    </Link>
   );
 }
