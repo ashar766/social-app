@@ -1,6 +1,7 @@
 import Link from "next/link";
 import LogoutButton from "./LogoutButton";
 import { auth } from "@/lib/auth";
+import SocketProvider from "./components/SocketProvider";
 
 export default async function AppLayout({
   children,
@@ -10,7 +11,7 @@ export default async function AppLayout({
   const session = await auth();
 
   return (
-    <>
+    <SocketProvider>
       <nav className="border-b p-4">
         <div className="flex gap-6">
           <Link href="/posts">Posts</Link>
@@ -24,6 +25,6 @@ export default async function AppLayout({
       </nav>
 
       <main>{children}</main>
-    </>
+    </SocketProvider>
   );
 }

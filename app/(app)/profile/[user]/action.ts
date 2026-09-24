@@ -3,6 +3,7 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { getIO } from "@/lib/socket";
 
 export async function toggleFollow(userId: string) {
   const session = await auth();
@@ -61,6 +62,18 @@ export async function toggleFollow(userId: string) {
         status: "PENDING",
       },
     });
+
+    const io = getIO();
+
+    console.log("SOCKET SERVER AVAILABLE:", !!io);
+
+    if (io) {
+      console.log("SENDING FOLLOW REQUEST TO:", `user:${userId}`);
+
+      io.to(`user:${userId}`).emit("follow-request", {
+        username: session.user.username,
+      });
+    }
 
     revalidatePath(`/profile/${user.username}`);
 

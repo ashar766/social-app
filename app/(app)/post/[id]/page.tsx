@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import CommentForm from "../../components/CommentForm";
 import DeletePostButton from "../../components/DeletePostButton";
+import CommentItem from "../../components/CommentItem";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -84,11 +85,12 @@ export default async function PostPage({ params }: Props) {
         ) : (
           <div className="space-y-3">
             {post.comments.map((comment) => (
-              <div key={comment.id}>
-                <p className="text-sm font-bold">@{comment.user.username}</p>
-
-                <p className="text-sm">{comment.content}</p>
-              </div>
+              <CommentItem
+                key={comment.id}
+                comment={comment}
+                currentUserId={session?.user?.id ?? ""}
+                postAuthorId={post.authorId}
+              />
             ))}
           </div>
         )}

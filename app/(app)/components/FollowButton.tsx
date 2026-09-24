@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toggleFollow } from "../profile/[user]/action";
 
@@ -12,6 +12,10 @@ type FollowButtonProps = {
 export default function FollowButton({ userId, status }: FollowButtonProps) {
   const [followStatus, setFollowStatus] = useState(status);
   const [pending, setPending] = useState(false);
+
+  useEffect(() => {
+    setFollowStatus(status);
+  }, [status]);
 
   const router = useRouter();
 

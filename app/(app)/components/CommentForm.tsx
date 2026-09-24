@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { addComment } from "../post/[id]/action";
 
 type CommentFormProps = {
@@ -10,6 +11,8 @@ type CommentFormProps = {
 export default function CommentForm({ postId }: CommentFormProps) {
   const [content, setContent] = useState("");
   const [pending, setPending] = useState(false);
+
+  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -26,6 +29,7 @@ export default function CommentForm({ postId }: CommentFormProps) {
 
     if (!result?.error) {
       setContent("");
+      router.refresh();
     }
   }
 

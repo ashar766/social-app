@@ -3,6 +3,7 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { getIO } from "@/lib/socket";
 
 export async function acceptFollowRequest(requestId: string) {
   const session = await auth();
@@ -35,6 +36,14 @@ export async function acceptFollowRequest(requestId: string) {
       status: "ACCEPTED",
     },
   });
+
+  const io = getIO();
+
+  if (io) {
+    io.to(`user:${request.followerId}`).emit("follow-accepted", {
+      username: session.user.username,
+    });
+  }
 
   revalidatePath(`/profile/${session.user.username}`);
 
