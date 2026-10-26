@@ -25,7 +25,7 @@ export default function PostMedia({ media, alt }: PostMediaProps) {
 
   return (
     <div
-      className={`relative w-full overflow-hidden bg-black ${isVideo ? "aspect-video" : "aspect-square"}`}
+      className={`relative w-full overflow-hidden bg-black aspect-square`}
     >
       {isVideo ? (
         <video
@@ -40,8 +40,7 @@ export default function PostMedia({ media, alt }: PostMediaProps) {
           src={activeMedia.url}
           alt={alt}
           fill
-          className="object-cover"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 66vw, 672px"
+          className="h-full w-full object-contain"
         />
       )}
 

@@ -132,3 +132,68 @@ export async function deleteComment(commentId: string) {
 
   return { success: true };
 }
+
+export async function replyToComment(
+  parentId: string,
+  content: string,
+) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return { error: "You must be logged in" };
+  }
+
+  const trimmedContent = content.trim();
+
+  if (!trimmedContent) {
+    return { error: "Reply cannot be empty" };
+  }
+
+  const parent = await prisma.comment.findUnique({
+    where: { id: parentId },
+    select: {
+      id: true,
+      postId: true,
+      parentId: true,
+    },
+  });
+
+  if (!parent) {
+    return { error: "Comment not found" };
+  }
+
+  if (parent.parentId !== null) {
+    return { error: "You can only reply to original comments" };
+  }
+
+  const post = await prisma.post.findUnique({
+    where: { id: parent.postId },
+    select: { authorId: true },
+  });
+
+  if (!post) {
+    return { error: "Post not found" };
+  }
+
+  await prisma.comment.create({
+    data: {
+      content: trimmedContent,
+      userId: session.user.id,
+      postId: parent.postId,
+      parentId: parent.id,
+    },
+  });
+
+  const io = getIO();
+
+  if (io) {
+    io.to(`user:${post.authorId}`).emit("post-commented", {
+      postId: parent.postId,
+      username: session.user.username,
+    });
+  }
+
+  revalidatePath(`/post/${parent.postId}`);
+
+  return { success: true };
+}

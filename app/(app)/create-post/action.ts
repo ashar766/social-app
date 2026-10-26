@@ -2,7 +2,6 @@
 
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { redirect } from "next/navigation";
 import {
   ALLOWED_IMAGE_TYPES,
   ALLOWED_VIDEO_TYPES,
@@ -225,5 +224,5 @@ export async function createPost(formData: FormData) {
     },
   });
 
-  redirect("/posts");
+  return { success: true };
 }

@@ -44,7 +44,7 @@ export default function FollowRequestButtons({ requestId }: Props) {
       <button
         onClick={handleAccept}
         disabled={pending}
-        className="rounded bg-black px-3 py-1 text-sm text-white disabled:opacity-50"
+        className="inline-flex min-h-10 items-center justify-center rounded-full bg-gray-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-950 dark:hover:bg-gray-200"
       >
         {pending ? "Loading..." : "Accept"}
       </button>
@@ -52,7 +52,7 @@ export default function FollowRequestButtons({ requestId }: Props) {
       <button
         onClick={handleReject}
         disabled={pending}
-        className="rounded border px-3 py-1 text-sm disabled:opacity-50"
+        className="rounded-full bg-gray-100 px-4 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-200 dark:bg-white/[0.08] dark:text-gray-100 dark:hover:bg-white/[0.14]"
       >
         Reject
       </button>

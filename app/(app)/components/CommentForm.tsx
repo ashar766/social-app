@@ -40,13 +40,13 @@ export default function CommentForm({ postId }: CommentFormProps) {
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="Write a comment..."
-        className="flex-1 rounded border p-2"
+        className="flex-1 rounded-xl border border-gray-200 p-2 focus:outline-none dark:border-neutral-700"
       />
 
       <button
         type="submit"
         disabled={pending || !content.trim()}
-        className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
+        className="rounded-xl border border-gray-200 px-3 py-2 text-sm bg-black text-white !font-semibold transition hover:bg-gray-500 dark:border-neutral-700 dark:hover:bg-neutral-800"
       >
         {pending ? "Posting..." : "Post"}
       </button>

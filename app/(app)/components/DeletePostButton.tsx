@@ -20,7 +20,7 @@ export default function DeletePostButton({ postId }: DeletePostButtonProps) {
   return (
     <button
       onClick={handleDelete}
-      className="rounded bg-red-500 px-4 py-2 text-sm text-white"
+      className="rounded-xl border border-gray-200 px-3 py-2 text-sm !font-semibold transition hover:bg-gray-500 dark:border-neutral-700 dark:hover:bg-neutral-800 bg-red-500 text-white"
     >
       Delete
     </button>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -79,18 +80,34 @@ export default function InfinitePosts({
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
         {posts.map((post) => (
           <PostCard key={post.id} post={post} />
         ))}
       </div>
 
-      <div ref={loaderRef} className="py-8 text-center text-sm text-gray-500">
-        {loading
-          ? "Loading more posts..."
-          : hasMore
-            ? "Scroll down to load more"
-            : "No more posts"}
+      <div
+        ref={loaderRef}
+        aria-live="polite"
+        className="flex min-h-20 items-center justify-center py-8 text-center"
+      >
+        {loading ? (
+          <div className="flex items-center gap-3 rounded-full border border-gray-200 bg-white px-5 py-3 text-sm font-medium text-gray-600 shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-300">
+            <span
+              aria-hidden="true"
+              className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-800 dark:border-gray-600 dark:border-t-white"
+            />
+            Loading more posts...
+          </div>
+        ) : hasMore ? (
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Scroll down to discover more
+          </p>
+        ) : posts.length > 0 ? (
+          <p className="text-sm text-gray-400 dark:text-gray-500">
+            You're all caught up.
+          </p>
+        ) : null}
       </div>
     </>
   );

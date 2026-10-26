@@ -1,3 +1,4 @@
+
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import Link from "next/link";
@@ -37,36 +38,36 @@ export default async function PostsPage({ searchParams }: Props) {
       // Following filter
       ...(currentFilter === "following"
         ? {
-            authorId: {
-              in: followedUserIds,
-            },
-          }
+          authorId: {
+            in: followedUserIds,
+          },
+        }
         : {
-            author: {
-              OR: [
-                { isPrivate: false },
-                {
-                  id: session!.user.id,
-                },
-                {
-                  followers: {
-                    some: {
-                      followerId: session!.user.id,
-                      status: "ACCEPTED",
-                    },
+          author: {
+            OR: [
+              { isPrivate: false },
+              {
+                id: session!.user.id,
+              },
+              {
+                followers: {
+                  some: {
+                    followerId: session!.user.id,
+                    status: "ACCEPTED",
                   },
                 },
-              ],
-            },
-          }),
+              },
+            ],
+          },
+        }),
 
       // Recent filter
       ...(currentFilter === "recent"
         ? {
-            createdAt: {
-              gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-            },
-          }
+          createdAt: {
+            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+          },
+        }
         : {}),
     },
 
@@ -103,30 +104,64 @@ export default async function PostsPage({ searchParams }: Props) {
     },
   }));
 
+  const filterClass = (filterName: string) =>
+    currentFilter === filterName
+      ? "border-gray-900 bg-gray-900 text-white dark:border-white dark:bg-white dark:text-gray-950"
+      : "border-gray-200 bg-white text-gray-600 hover:border-gray-400 hover:bg-gray-50 hover:text-gray-950 dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-300 dark:hover:border-white/25 dark:hover:bg-white/[0.08] dark:hover:text-white";
+
   return (
-    <main className="mx-auto max-w-5xl p-6">
-      <h1 className="mb-6 text-3xl font-bold">Posts</h1>
+    <main className="mx-auto min-h-screen w-full max-w-5xl px-4 py-8 text-gray-950 sm:px-6 sm:py-10 dark:text-gray-100">
+      <header className="mb-8">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
+          Your community
+        </p>
+
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+          Explore posts
+        </h1>
+
+        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+          Catch up with the latest posts from your community.
+        </p>
+      </header>
 
       {/* Filters */}
-      <div className="mb-6 flex flex-wrap gap-2">
-        <Link href="/posts?filter=all" className="rounded border px-4 py-2">
-          All
+      <nav
+        aria-label="Post filters"
+        className="mb-8 flex flex-wrap items-center gap-2"
+      >
+        <Link
+          href="/posts?filter=all"
+          aria-current={currentFilter === "all" ? "page" : undefined}
+          className={`inline-flex min-h-10 items-center justify-center rounded-full border px-5 py-2 text-sm font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 ${filterClass("all")}`}
+        >
+          All posts
         </Link>
 
-        <Link href="/posts?filter=recent" className="rounded border px-4 py-2">
+        <Link
+          href="/posts?filter=recent"
+          aria-current={currentFilter === "recent" ? "page" : undefined}
+          className={`inline-flex min-h-10 items-center justify-center rounded-full border px-5 py-2 text-sm font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 ${filterClass("recent")}`}
+        >
           Recent
         </Link>
 
         <Link
           href="/posts?filter=following"
-          className="rounded border px-4 py-2"
+          aria-current={currentFilter === "following" ? "page" : undefined}
+          className={`inline-flex min-h-10 items-center justify-center rounded-full border px-5 py-2 text-sm font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500 ${filterClass("following")}`}
         >
           Following
         </Link>
-      </div>
+      </nav>
 
       {postsWithLikes.length === 0 ? (
-        <p className="text-gray-500">No posts found.</p>
+        <div className="rounded-2xl border border-gray-200 bg-white px-5 py-14 text-center shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+          <h2 className="text-lg font-semibold">No posts found</h2>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            There are no posts to show for this filter yet.
+          </p>
+        </div>
       ) : (
         <InfinitePosts
           initialPosts={postsWithLikes}
