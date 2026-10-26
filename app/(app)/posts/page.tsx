@@ -14,50 +14,86 @@ export default async function PostsPage({ searchParams }: Props) {
 
   const session = await auth();
 
-  const validFilters = ["all", "recent", "following", "popular"];
+  const validFilters = ["all", "recent", "following"];
 
   const currentFilter = validFilters.includes(filter) ? filter : "all";
 
+  // Get the users that the logged-in user follows
+  const following = await prisma.follow.findMany({
+    where: {
+      followerId: session!.user.id,
+      status: "ACCEPTED",
+    },
+    select: {
+      followingId: true,
+    },
+  });
+
+  const followedUserIds = following.map((follow) => follow.followingId);
+
   // Get the first 10 posts
   const posts = await prisma.post.findMany({
-    where:
-      currentFilter === "following"
+    where: {
+      // Following filter
+      ...(currentFilter === "following"
         ? {
             authorId: {
-              in: (
-                await prisma.follow.findMany({
-                  where: {
-                    followerId: session!.user.id,
-                    status: "ACCEPTED",
-                  },
-                  select: {
-                    followingId: true,
-                  },
-                })
-              ).map((follow) => follow.followingId),
+              in: followedUserIds,
             },
           }
-        : currentFilter === "recent"
-          ? {
-              createdAt: {
-                gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-              },
-            }
-          : {},
+        : {
+            author: {
+              OR: [
+                { isPrivate: false },
+                {
+                  id: session!.user.id,
+                },
+                {
+                  followers: {
+                    some: {
+                      followerId: session!.user.id,
+                      status: "ACCEPTED",
+                    },
+                  },
+                },
+              ],
+            },
+          }),
+
+      // Recent filter
+      ...(currentFilter === "recent"
+        ? {
+            createdAt: {
+              gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+            },
+          }
+        : {}),
+    },
+
     orderBy: {
       createdAt: "desc",
     },
+
     include: {
       author: true,
       likes: true,
+      media: {
+        orderBy: {
+          position: "asc",
+        },
+      },
     },
+
     take: 10,
   });
 
   const postsWithLikes = posts.map((post) => ({
     id: post.id,
     caption: post.caption,
-    imageUrl: post.imageUrl,
+    media: post.media.map((item) => ({
+      url: item.url,
+      type: item.type,
+    })),
     category: post.category,
     likeCount: post.likes.length,
     liked: post.likes.some((like) => like.userId === session!.user.id),
@@ -86,10 +122,6 @@ export default async function PostsPage({ searchParams }: Props) {
           className="rounded border px-4 py-2"
         >
           Following
-        </Link>
-
-        <Link href="/posts?filter=popular" className="rounded border px-4 py-2">
-          Popular
         </Link>
       </div>
 

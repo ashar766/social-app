@@ -1,10 +1,16 @@
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import type { Metadata } from "next";
-import Image from "next/image";
 import FollowButton from "../../components/FollowButton";
 import FollowRequestButtons from "../../components/FollowRequestButtons";
+import PrivacySwitch from "../../components/PrivacySwitch";
+import LikeButton from "../../components/LikeButton";
+import PostMedia from "../../components/PostMedia";
+import ProfileImage from "./profileImage";
+import LogoutButton from "@/app/(app)/LogoutButton";
+
 
 type Props = {
   params: Promise<{ user: string }>;
@@ -34,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ProfilePage({ params }: Props) {
   const { user } = await params;
 
-  const session = await auth();
+  const session = await auth(); // authentication
 
   const profile = await prisma.user.findUnique({
     where: {
@@ -60,13 +66,13 @@ export default async function ProfilePage({ params }: Props) {
   // Check the relationship between the logged-in user and this profile
   const existingFollow = session?.user?.id
     ? await prisma.follow.findUnique({
-        where: {
-          followerId_followingId: {
-            followerId: session.user.id,
-            followingId: profile.id,
-          },
+      where: {
+        followerId_followingId: {
+          followerId: session.user.id,
+          followingId: profile.id,
         },
-      })
+      },
+    })
     : null;
 
   // Decide whether the current user can see the posts
@@ -84,30 +90,49 @@ export default async function ProfilePage({ params }: Props) {
   // Only fetch the actual posts if the user is allowed to see them
   const posts = canViewPosts
     ? await prisma.post.findMany({
-        where: {
-          authorId: profile.id,
+      where: {
+        authorId: profile.id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        likes: true,
+        media: {
+          orderBy: {
+            position: "asc",
+          },
         },
-        orderBy: {
-          createdAt: "desc",
-        },
-      })
+      },
+    })
     : [];
+
+  // Calculate like information for each post
+  const postsWithLikes = posts.map((post) => ({
+    ...post,
+    likeCount: post.likes.length,
+    liked: post.likes.some((like) => like.userId === session?.user?.id),
+  }));
 
   // Get pending follow requests received by this profile
   const pendingRequests = isOwner
     ? await prisma.follow.findMany({
-        where: {
-          followingId: profile.id,
-          status: "PENDING",
-        },
-        include: {
-          follower: true,
-        },
-      })
+      where: {
+        followingId: profile.id,
+        status: "PENDING",
+      },
+      include: {
+        follower: true,
+      },
+    })
     : [];
 
   return (
     <main className="mx-auto max-w-3xl p-6">
+      <div className="mb-4 flex justify-end">
+        <LogoutButton />
+      </div>
+
       {/* Follow Requests */}
       {isOwner && pendingRequests.length > 0 && (
         <section className="mb-6 rounded-lg border p-4">
@@ -134,11 +159,14 @@ export default async function ProfilePage({ params }: Props) {
         </section>
       )}
 
+
       {/* Profile Header */}
       <div className="flex items-center gap-6 border-b pb-6">
-        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gray-200 text-3xl">
-          {profile.name.charAt(0)}
-        </div>
+        <ProfileImage
+          image={profile.image}
+          name={profile.name}
+          isOwner={isOwner}
+        />
 
         <div>
           <h1 className="text-2xl font-bold">{profile.name}</h1>
@@ -157,6 +185,9 @@ export default async function ProfilePage({ params }: Props) {
           )}
         </div>
       </div>
+
+
+      {isOwner && <PrivacySwitch initialIsPrivate={profile.isPrivate} />}
 
       {/* Profile Stats */}
       <div className="flex gap-8 py-6">
@@ -195,27 +226,37 @@ export default async function ProfilePage({ params }: Props) {
         <section>
           <h2 className="mb-4 text-xl font-bold">Posts</h2>
 
-          {posts.length === 0 ? (
+          {postsWithLikes.length === 0 ? (
             <p className="text-gray-500">No posts yet.</p>
           ) : (
             <div className="grid grid-cols-2 gap-4">
-              {posts.map((post) => (
-                <div
+              {postsWithLikes.map((post) => (
+                <article
                   key={post.id}
                   className="overflow-hidden rounded-lg border"
                 >
-                  <div className="relative aspect-square">
-                    <Image
-                      src={post.imageUrl}
-                      alt={post.caption || "Post image"}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 50vw, 384px"
-                    />
-                  </div>
+                  <PostMedia
+                    media={post.media.map((item) => ({
+                      url: item.url,
+                      type: item.type,
+                    }))}
+                    alt={post.caption || "Post media"}
+                  />
 
-                  {post.caption && <p className="p-3">{post.caption}</p>}
-                </div>
+                  <div className="p-3">
+                    <Link href={`/post/${post.id}`} className="block">
+                      {post.caption || "View post"}
+                    </Link>
+
+                    <div className="mt-2">
+                      <LikeButton
+                        postId={post.id}
+                        liked={post.liked}
+                        likeCount={post.likeCount}
+                      />
+                    </div>
+                  </div>
+                </article>
               ))}
             </div>
           )}

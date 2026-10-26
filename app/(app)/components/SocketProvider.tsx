@@ -49,6 +49,12 @@ export default function SocketProvider({
       router.refresh();
     });
 
+    socket.on("post-unliked", (data) => {
+      console.log("POST UNLIKED:", data);
+
+      router.refresh();
+    });
+
     socket.on("post-commented", (data) => {
       console.log("POST COMMENTED:", data);
 

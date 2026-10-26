@@ -54,7 +54,7 @@ export default function LikeButton({
       disabled={pending}
       className="text-sm disabled:opacity-50"
     >
-      {isLiked ? "❤️" : "♡"} {count}
+      {isLiked ? "❤️" : "❤︎⁠"} {count}
     </button>
   );
 }

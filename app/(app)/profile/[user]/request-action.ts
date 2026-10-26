@@ -25,7 +25,7 @@ export async function acceptFollowRequest(requestId: string) {
   // Make sure the logged-in user is the person
   // who received the request.
   if (request.followingId !== session.user.id) {
-    return { error: "You are not allowed to accept this request" };
+    return { error: "You are not allowed to accept this request" }; //authorization check
   }
 
   await prisma.follow.update({

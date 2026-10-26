@@ -1,10 +1,10 @@
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import CommentForm from "../../components/CommentForm";
 import DeletePostButton from "../../components/DeletePostButton";
 import CommentItem from "../../components/CommentItem";
+import PostMedia from "../../components/PostMedia";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -21,6 +21,11 @@ export default async function PostPage({ params }: Props) {
     },
     include: {
       author: true,
+      media: {
+        orderBy: {
+          position: "asc",
+        },
+      },
       comments: {
         include: {
           user: true,
@@ -45,15 +50,13 @@ export default async function PostPage({ params }: Props) {
           <p className="text-sm text-gray-500">{post.author.name}</p>
         </div>
 
-        <div className="relative aspect-square">
-          <Image
-            src={post.imageUrl}
-            alt={post.caption || "Post image"}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 672px"
-          />
-        </div>
+        <PostMedia
+          media={post.media.map((item) => ({
+            url: item.url,
+            type: item.type,
+          }))}
+          alt={post.caption || "Post media"}
+        />
 
         <div className="p-4">
           {post.caption && <p>{post.caption}</p>}

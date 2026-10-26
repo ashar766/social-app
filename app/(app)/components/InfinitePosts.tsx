@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import PostCard from "./PostCard";
+import type { PostMediaItem } from "./PostMedia";
 
 type Post = {
   id: string;
   caption: string | null;
-  imageUrl: string;
+  media: PostMediaItem[];
   category: string | null;
   likeCount: number;
   liked: boolean;

@@ -20,6 +20,24 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Post media uploads
+
+Posts can contain up to 10 JPEG, PNG, GIF, or WebP images (5 MB each), or one MP4, WebM, or MOV video (50 MB). Images and videos cannot be mixed in one post.
+
+Set `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` and `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET` in `.env`. Configure the existing unsigned Cloudinary upload preset to allow `jpg`, `png`, `gif`, `webp`, `mp4`, `webm`, and `mov`, with a maximum file size of 50 MB. The server additionally enforces the per-image 5 MB limit and validates file contents.
+
+Apply the post-media database migration before using or deploying the updated app:
+
+```bash
+npx prisma migrate dev --config prisma7.config.ts
+```
+
+For production deployments, apply committed migrations with:
+
+```bash
+npx prisma migrate deploy --config prisma7.config.ts
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
