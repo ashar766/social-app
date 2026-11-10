@@ -57,7 +57,7 @@ export default function UserSearch() {
                     setLoading(false);
                 }
             }
-        }, 300);
+        }, 400);
 
         return () => {
             cancelled = true;
