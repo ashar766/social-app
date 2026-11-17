@@ -111,7 +111,7 @@ export async function GET(request: Request) {
     take: pageSize,
   });
 
-  let sortedPosts = posts;
+  const sortedPosts = posts;
 
   const postsWithLikes = sortedPosts.map((post) => ({
     id: post.id,

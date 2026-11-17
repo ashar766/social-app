@@ -4,7 +4,7 @@ export default function NotFound() {
       <h1 className="mb-2 text-3xl font-bold">Profile Not Found</h1>
 
       <p className="text-gray-500">
-        The user you're looking for doesn't exist.
+        The user you&apos;re looking for doesn&apos;t exist.
       </p>
     </main>
   );

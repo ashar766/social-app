@@ -22,8 +22,6 @@ export default function UserSearch() {
         const search = query.trim();
 
         if (!search || search.length > 50) {
-            setUsers([]);
-            setLoading(false);
             return;
         }
 
@@ -104,6 +102,8 @@ export default function UserSearch() {
                     value={query}
                     onChange={(event) => {
                         setQuery(event.target.value);
+                        setUsers([]);
+                        setLoading(false);
                         setOpen(true);
                     }}
                     onFocus={() => {

@@ -4,7 +4,6 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { signup } from "./action";
-import Image from "next/image";
 
 const initialState = {
   error: "",

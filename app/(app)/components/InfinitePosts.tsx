@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import PostCard from "./PostCard";
 import type { PostMediaItem } from "./PostMedia";
 
@@ -36,11 +36,34 @@ export default function InfinitePosts({
 
   const loaderRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    setPosts(initialPosts);
-    setPage(1);
-    setHasMore(initialHasMore);
-  }, [initialPosts, initialHasMore, filter]);
+  const loadMore = useCallback(async () => {
+    if (loading) return;
+
+    setLoading(true);
+
+    try {
+      const nextPage = page + 1;
+
+      const response = await fetch(
+        `/api/posts?filter=${filter}&page=${nextPage}`,
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to load posts");
+      }
+
+      const data = await response.json();
+
+      setPosts((currentPosts) => [...currentPosts, ...data.posts]);
+
+      setPage(nextPage);
+      setHasMore(data.hasMore);
+    } catch (error) {
+      console.error("Error loading posts:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [loading, page, filter]);
 
   useEffect(() => {
     if (!loaderRef.current || !hasMore) {
@@ -58,25 +81,7 @@ export default function InfinitePosts({
     return () => {
       observer.disconnect();
     };
-  }, [hasMore, loading]);
-
-  async function loadMore() {
-    setLoading(true);
-
-    const nextPage = page + 1;
-
-    const response = await fetch(
-      `/api/posts?filter=${filter}&page=${nextPage}`,
-    );
-
-    const data = await response.json();
-
-    setPosts((currentPosts) => [...currentPosts, ...data.posts]);
-
-    setPage(nextPage);
-    setHasMore(data.hasMore);
-    setLoading(false);
-  }
+  }, [hasMore, loading, loadMore]);
 
   return (
     <>
@@ -105,7 +110,7 @@ export default function InfinitePosts({
           </p>
         ) : posts.length > 0 ? (
           <p className="text-sm text-gray-400 dark:text-gray-500">
-            You're all caught up.
+            You&apos;re all caught up.
           </p>
         ) : null}
       </div>

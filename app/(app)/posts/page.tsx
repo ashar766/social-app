@@ -65,6 +65,7 @@ export default async function PostsPage({ searchParams }: Props) {
       ...(currentFilter === "recent"
         ? {
           createdAt: {
+            // eslint-disable-next-line react-hooks/purity
             gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
           },
         }
