@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toggleFollow } from "../profile/[user]/action";
 
@@ -10,12 +11,7 @@ type FollowButtonProps = {
 };
 
 export default function FollowButton({ userId, status }: FollowButtonProps) {
-  const [followStatus, setFollowStatus] = useState(status);
   const [pending, setPending] = useState(false);
-
-  useEffect(() => {
-    setFollowStatus(status);
-  }, [status]);
 
   const router = useRouter();
 
@@ -25,14 +21,6 @@ export default function FollowButton({ userId, status }: FollowButtonProps) {
     const result = await toggleFollow(userId);
 
     if (!result?.error) {
-      if (result.status === "accepted") {
-        setFollowStatus("ACCEPTED");
-      } else if (result.status === "pending") {
-        setFollowStatus("PENDING");
-      } else if (result.status === "removed") {
-        setFollowStatus(null);
-      }
-
       router.refresh();
     }
 
@@ -47,9 +35,9 @@ export default function FollowButton({ userId, status }: FollowButtonProps) {
     >
       {pending
         ? "Loading..."
-        : followStatus === "ACCEPTED"
+        : status === "ACCEPTED"
           ? "Following"
-          : followStatus === "PENDING"
+          : status === "PENDING"
             ? "Requested"
             : "Follow"}
     </button>

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toggleLike } from "../posts/action";
 
 type LikeButtonProps = {
@@ -18,11 +18,6 @@ export default function LikeButton({
   const [isLiked, setIsLiked] = useState(liked);
   const [count, setCount] = useState(likeCount);
   const [pending, setPending] = useState(false);
-
-  useEffect(() => {
-    setIsLiked(liked);
-    setCount(likeCount);
-  }, [liked, likeCount]);
 
   async function handleLike(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
@@ -65,8 +60,8 @@ export default function LikeButton({
         strokeLinecap="round"
         strokeLinejoin="round"
         className={`h-6 w-6 transition-transform duration-200 group-hover:scale-110 ${isLiked
-            ? "animate-heart-pop text-red-500"
-            : "text-gray-500 group-hover:text-red-500 dark:text-gray-400"
+          ? "animate-heart-pop text-red-500"
+          : "text-gray-500 group-hover:text-red-500 dark:text-gray-400"
           }`}
       >
         <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
