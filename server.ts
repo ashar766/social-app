@@ -4,7 +4,7 @@ import { Server } from "socket.io";
 import { setIO } from "./lib/socket";
 
 const dev = process.env.NODE_ENV !== "production";
-const hostname = "localhost";
+const hostname = process.env.NODE_ENV === "production" ? "0.0.0.0" : "localhost";
 const port = 3000;
 
 const app = next({
