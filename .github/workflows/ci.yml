@@ -1,4 +1,5 @@
-name: Social App CI
+
+name: Social App CI/CD
 
 on:
   push:
@@ -35,3 +36,33 @@ jobs:
 
       - name: Build application
         run: npm run build
+
+  deploy:
+    name: Deploy to EC2
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: [self-hosted, linux, x64]
+
+    concurrency:
+      group: production-deploy
+      cancel-in-progress: false
+
+    steps:
+      - name: Deploy application
+        run: |
+          set -e
+
+          cd /home/ubuntu/social-app
+
+          git fetch origin master
+          git merge --ff-only origin/master
+
+          npm ci
+          npx prisma generate
+          npm run build
+
+          sudo /usr/bin/systemctl restart social-app.service
+
+          sudo /usr/bin/systemctl is-active --quiet social-app.service
+
+          echo "Deployment successful"
